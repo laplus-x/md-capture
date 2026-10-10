@@ -37,30 +37,25 @@ Tests cover request construction, URL validation, success, 429, invalid URL with
 
 ## Release procedure
 
-Releases are manual tag-based and validated by GitHub Actions.
+Releases are managed by Release Please with Conventional Commits.
 
-1. Update `CHANGELOG.md` – add a new version heading under `## [Unreleased]` or create it. Do not leave the `Unreleased` section empty.
-2. Update `package.json` version and `wxt.config.ts` manifest version to the same value.
-3. Run local quality gates:
-   ```bash
-   npm run check
-   npm run build
-   ```
-4. Commit changes:
-   ```bash
-   git add CHANGELOG.md package.json wxt.config.ts
-   git commit -m "chore: release vX.Y.Z"
-   ```
-5. Create and push tag:
-   ```bash
-   git tag vX.Y.Z
-   git push origin vX.Y.Z
-   ```
-6. GitHub Actions `Release` workflow runs automatically:
-   - Validates tag vs package.json vs manifest version
-   - Validates Changelog entry exists and is non-empty
-   - Runs lint, format check, typecheck, tests, build
-   - Packages `.output/chrome-mv3` into `md-capture-vX.Y.Z.zip`
-   - Creates GitHub Release with notes extracted from `CHANGELOG.md`
+1. Write commits using Conventional Commits, e.g.:
+   - `feat:` → MINOR bump
+   - `fix:` → PATCH bump
+   - `feat!:` or `fix!:` with breaking change → MAJOR bump
+2. Merge changes to `main`. Release Please analyzes commits since last release.
+3. Release Please opens or updates a Release PR that:
+   - Bumps `package.json` version
+   - Updates `CHANGELOG.md`
+   - Manifest version is derived from `package.json` via `wxt.config.ts`
+4. Review the Release PR, ensure CI passes, then merge.
+5. On merge, Release Please creates Git tag `v<version>` and GitHub Release with notes.
+6. Post-release workflow triggered on `release`:
+   - Checks out tag
+   - Runs quality gates
+   - Builds with WXT
+   - Validates manifest version matches package version
+   - Packages `.output/chrome-mv3` into `md-capture-v<version>.zip`
+   - Uploads ZIP to the existing GitHub Release
 
-Do not publish a release if any validation fails. Tagging is manual and reviewable.
+Manual version bumps are not required. Do not create tags manually.

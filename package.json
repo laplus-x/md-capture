@@ -18,8 +18,7 @@
     "typecheck": "tsc --noEmit -p .wxt/tsconfig.json",
     "check": "npm run typecheck && npm run lint && npm run format:check && npm test",
     "verify": "npm run check && npm run build",
-    "prepare": "husky",
-    "validate:version": "node scripts/validate-version.mjs"
+    "prepare": "husky"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.3",

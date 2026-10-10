@@ -1,0 +1,6 @@
+{
+  "$schema": "https://docs.github.com/en/enterprise-server/docs/reference/release-please/release-please-configuration-reference",
+  "changelogPath": "CHANGELOG.md",
+  "regexFilename": "*.md",
+  "bumpMinorPreMajor": true
+}
