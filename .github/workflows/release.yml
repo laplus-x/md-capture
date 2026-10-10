@@ -1,0 +1,109 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Extract versions
+        id: versions
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "pkg=$PKG_VERSION" >> $GITHUB_OUTPUT
+          if [ "$TAG" != "$PKG_VERSION" ]; then
+            echo "Version mismatch: tag $TAG != package.json $PKG_VERSION"
+            exit 1
+          fi
+
+      - name: Validate manifest version
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          MANIFEST_VERSION=$(node -p "import('./wxt.config.ts').then(m=>m.default.manifest.version)" || grep -o '"version": *"[^"]*"' wxt.config.ts | head -1 | cut -d'"' -f4)
+          # Fallback simple grep
+          MANIFEST_VERSION=$(grep -oP '"version":\s*"\K[^"]+' wxt.config.ts)
+          if [ "$MANIFEST_VERSION" != "$PKG_VERSION" ]; then
+            echo "Manifest version $MANIFEST_VERSION != package.json $PKG_VERSION"
+            exit 1
+          fi
+
+      - name: Validate Changelog entry
+        run: |
+          VERSION="${{ steps.versions.outputs.tag }}"
+          if ! grep -q "^## \[$VERSION\]" CHANGELOG.md && ! grep -q "^## \[$VERSION\] -" CHANGELOG.md; then
+            echo "Changelog entry for $VERSION not found"
+            exit 1
+          fi
+          # Ensure entry has content beyond heading
+          if ! awk "/^## \\[$VERSION\\]/ {flag=1; next} /^## \[/ {flag=0} flag" CHANGELOG.md | grep -qve '^\s*$'; then
+            echo "Changelog entry for $VERSION is empty"
+            exit 1
+          fi
+
+      - name: Quality gates
+        run: |
+          npm run typecheck
+          npm run lint
+          npm run format:check
+          npm test
+
+      - name: Build production
+        run: npm run build
+
+      - name: Package extension
+        id: package
+        run: |
+          VERSION="${{ steps.versions.outputs.tag }}"
+          OUTPUT_DIR=".output/chrome-mv3"
+          ZIP_NAME="md-capture-v${VERSION}.zip"
+          cd "$OUTPUT_DIR" && zip -r "../../$ZIP_NAME" .
+          echo "zip=$ZIP_NAME" >> $GITHUB_OUTPUT
+          # Validate manifest at root
+          if ! unzip -l "../../$ZIP_NAME" | grep -q "^ *0 *manifest.json$"; then
+            if ! unzip -l "../../$ZIP_NAME" | grep -q "manifest.json"; then
+              echo "manifest.json not found in zip"
+              exit 1
+            fi
+          fi
+
+      - name: Extract release notes
+        id: notes
+        run: |
+          VERSION="${{ steps.versions.outputs.tag }}"
+          # Extract section for version
+          NOTES=$(awk "/^## \\[$VERSION\\]/ {flag=1; next} /^## \[/ {flag=0} flag" CHANGELOG.md)
+          # Write to file for action input
+          echo "$NOTES" > release_notes.md
+          echo "notes_file=release_notes.md" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@64df7ca660f0a62e71442d521755ff05b68b9b9b # v2.0.1
+        with:
+          files: ${{ steps.package.outputs.zip }}
+          body_path: release_notes.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
