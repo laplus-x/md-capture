@@ -1,5 +1,5 @@
 const statusEl = document.getElementById('status') as HTMLElement;
-const outputEl = document.getElementById('output') as HTMLPreElement;
+const outputEl = document.getElementById('output') as HTMLTextAreaElement;
 const convertBtn = document.getElementById('convert-btn') as HTMLButtonElement;
 const copyBtn = document.getElementById('copy-btn') as HTMLButtonElement;
 const retryBtn = document.getElementById('retry-btn') as HTMLButtonElement;
@@ -43,28 +43,32 @@ async function getCurrentTabUrl(): Promise<string | null> {
 async function convert(url: string) {
   setState('loading', 'Converting...');
   setUI({ loading: true });
-  if (outputEl) outputEl.textContent = '';
+  if (outputEl) outputEl.value = '';
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 30000);
-    const res = await fetch('https://markdown.new/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url, method: 'auto', retain_images: false }),
+    const requestUrl = 'https://markdown.new/' + url;
+    const res = await fetch(requestUrl, {
+      method: 'GET',
+      headers: { Accept: 'text/markdown' },
       signal: controller.signal,
     });
     clearTimeout(timeout);
 
     if (!res.ok) {
-      if (res.status === 429)
+      if (res.status === 429) {
         throw new Error('Rate limit exceeded (429). Try later.');
+      }
       throw new Error(`Request failed with ${res.status}`);
     }
 
     const text = await res.text();
-    if (!text) throw new Error('Empty response');
+    if (!text) {
+      throw new Error('Empty Markdown content');
+    }
+
     lastMarkdown = text;
-    if (outputEl) outputEl.textContent = text;
+    if (outputEl) outputEl.value = text;
     setState('success', 'Conversion succeeded');
     setUI({ success: true });
   } catch (err: unknown) {
@@ -91,7 +95,10 @@ async function startConversion() {
 }
 
 async function copyMarkdown() {
-  if (!lastMarkdown) return;
+  if (!lastMarkdown) {
+    setState('error', 'No content to copy');
+    return;
+  }
   setState('loading', 'Copying...');
   try {
     await navigator.clipboard.writeText(lastMarkdown);

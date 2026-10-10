@@ -12,4 +12,9 @@ export default defineConfig({
       default_title: 'Capture page as Markdown',
     },
   },
+  dev: {
+    server: {
+      port: 3000,
+    },
+  },
 });

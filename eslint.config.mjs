@@ -6,7 +6,13 @@ import prettierConfig from 'eslint-config-prettier';
 
 export default [
   {
-    ignores: ['.wxt/**', 'node_modules/**', '.output/**', 'scripts/**'],
+    ignores: [
+      '.wxt/**',
+      'node_modules/**',
+      '.output/**',
+      'scripts/**',
+      '.opencode/**',
+    ],
   },
   js.configs.recommended,
   {
