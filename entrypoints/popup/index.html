@@ -8,17 +8,23 @@
   </head>
   <body>
     <div id="app">
-      <header>
-        <h1>md-capture</h1>
-        <button id="convert-btn">Convert current page</button>
-      </header>
-      <div id="status" class="status idle">Ready</div>
-      <div class="output-wrap">
-        <div class="output-header">
-          <span>Markdown output</span>
-        </div>
-        <textarea id="output" aria-label="Markdown output" readonly></textarea>
-        <div id="actions">
+      <div class="toolbar">
+        <div class="brand">md-capture</div>
+        <button id="convert-btn" aria-label="Convert current page to Markdown">
+          Convert
+        </button>
+      </div>
+      <div id="status" class="status idle" role="status" aria-live="polite">
+        Ready
+      </div>
+      <div class="workspace">
+        <textarea
+          id="output"
+          aria-label="Markdown output"
+          readonly
+          placeholder="Markdown will appear here after conversion"
+        ></textarea>
+        <div class="workspace-actions">
           <button id="copy-btn" disabled>Copy</button>
           <button id="retry-btn" class="hidden">Retry</button>
         </div>
