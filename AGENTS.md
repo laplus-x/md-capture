@@ -1,45 +1,151 @@
-# md-capture – Agent Notes
+# md-capture
 
-## What it is
-Chrome Manifest V3 extension built with WXT. Converts current tab to Markdown via `https://markdown.new/`. ESM, TypeScript, Node >=20.
+## Project
 
-## Key commands
-- `npm run dev` – WXT dev server, dev server on port 3000 per `wxt.config.ts`
-- `npm run build` – production build → `.output/chrome-mv3`
-- `npm run typecheck` – `tsc --noEmit -p .wxt/tsconfig.json`
-- `npm run lint` – `eslint . --ext .ts`
-- `npm run format:check` – prettier check
-- `npm test` – Vitest, config `vitest.config.ts` with `WxtVitest`, environment node, includes `tests/**/*.test.ts`
-- `npm run test:e2e` – Playwright, config `playwright.config.ts`, test dir `e2e`
-- `npm run check` – typecheck → lint → format:check → test
-- `npm run verify` – check → build
+- Chrome Manifest V3 extension.
+- Framework: WXT 0.19.0.
+- Language: TypeScript, ESM.
+- Runtime: Node.js >=20.
+- Package manager: npm.
+- Purpose: Convert the active tab URL to Markdown with `https://markdown.new/`.
 
-Quality gate order matters. CI runs lint, format:check, typecheck, tests, build.
+## Commands
+
+Check `package.json` before you change or document a command.
+
+| Command                | Purpose                                                   |
+| ---------------------- | --------------------------------------------------------- |
+| `npm run dev`          | Start the WXT dev server on port 3000.                    |
+| `npm run build`        | Build the Chrome extension. Output: `.output/chrome-mv3`. |
+| `npm run typecheck`    | Run TypeScript checks.                                    |
+| `npm run lint`         | Run ESLint.                                               |
+| `npm run format:check` | Check formatting with Prettier.                           |
+| `npm test`             | Run Vitest.                                               |
+| `npm run test:e2e`     | Run Playwright E2E tests.                                 |
+| `npm run check`        | Run typecheck, lint, format check, and unit tests.        |
+| `npm run verify`       | Run checks and build the extension.                       |
+
+Check the CI configuration for the actual CI steps.
 
 ## Architecture
-- Entry points: `entrypoints/popup/` – `index.html`, `main.ts`, `style.css`
-- Background: `entrypoints/background.ts` exists only for test discovery, no-op via `defineBackground`. Required for Playwright `context.serviceWorkers()` extensionId resolution. Does not change product contract.
-- Manifest version is derived from `package.json` version in `wxt.config.ts`. Do not edit manifest version manually.
-- Permissions: `activeTab`, host `https://markdown.new/*`
 
-## Testing quirks
-- Playwright loads unpacked extension with `--disable-extensions-except` and `--load-extension=.output/chrome-mv3`. Extension ID is obtained from service worker.
-- E2E tests mock `chrome.tabs.query` via `page.addInitScript` to return a deterministic URL and mock `navigator.clipboard.writeText`. Do not rely on live `markdown.new`.
-- Requests to `**/markdown.new/**` are intercepted with `context.route` for deterministic success / error / retry scenarios.
-- Screenshots saved to `test-results/screenshots`.
-- `e2e/fixtures.ts` provides `context` and `extensionId`. Do not change fixture discovery without also handling background worker requirement.
+- Popup: `entrypoints/popup/`.
+- Background worker: `entrypoints/background.ts`.
+- WXT configuration: `wxt.config.ts`.
+- Package scripts and version: `package.json`.
 
-## Dev workflow conventions
-- Conventional Commits enforced via commitlint. Release Please manages version bumps and changelog. No manual tags.
-- Load extension in Chrome via unpacked `.output/chrome-mv3` after `npm run build`.
-- Code style: ESLint + Prettier. Ignores `.wxt/**`, `node_modules/**`, `.output/**`.
-- Do not add production background functionality. Keep background no-op.
+WXT generates the extension manifest from its configuration. The manifest version comes from `package.json`. Do not edit generated files.
 
-## Important files
-- `wxt.config.ts` – manifest version sync, dev port
-- `package.json` – version source of truth
-- `playwright.config.ts` – extension load args
-- `e2e/fixtures.ts` – extension ID discovery
-- `docs/test-background-worker.md` – why background worker exists
+The extension uses these permissions:
 
-Prefer executable sources over docs. If `README.md` conflicts with scripts/config, trust scripts/config.
+- `activeTab`
+- Host access to `https://markdown.new/*`
+
+### API Contract
+
+Preserve the current request behavior:
+
+- Method: `GET`
+- Endpoint: `https://markdown.new/<url>`
+- Header: `Accept: text/markdown`
+
+Preserve URL handling and UI states. Do not change the method or production API behavior to simplify tests.
+
+## Development Rules
+
+- Inspect the relevant source and configuration before you change code.
+- Use the existing architecture and npm lockfile.
+- Make small changes that match the task.
+- Do not add features or refactor unrelated code.
+- Do not add background behavior without a product requirement.
+- Update documentation when verified changes make it inaccurate.
+
+## Testing
+
+### Unit Tests
+
+- Configuration: `vitest.config.ts`.
+- Discovery pattern: `tests/**/*.test.ts`.
+- Test runner: Vitest with WXT integration.
+
+Check the test results. If no tests are discovered, report this. Do not claim test coverage without evidence.
+
+### E2E Tests
+
+- Configuration: `playwright.config.ts`.
+- Test directory: `e2e/`.
+- Fixture: `e2e/fixtures.ts`.
+
+Playwright loads the built extension as an unpacked extension. It uses `--disable-extensions-except` and `--load-extension=.output/chrome-mv3`.
+
+Check whether Playwright builds the extension before testing. If not, build it from the current source first.
+
+The fixture gets the extension ID from `context.serviceWorkers()`. The no-op background worker supports this process.
+
+Before you change or remove the worker, inspect the fixture and test the effect on extension loading, ID discovery, and E2E tests. Update `docs/test-background-worker.md` when this dependency changes.
+
+### Test Mocks
+
+- `page.addInitScript` mocks `chrome.tabs.query` to set the active tab URL.
+- Clipboard behavior is mocked where configured.
+- `context.route` intercepts requests matching `**/markdown.new/**`.
+
+These mocks test application behavior. They do not test the live service or real clipboard integration.
+
+Report only tests that exist and ran successfully.
+
+### Test Artifacts
+
+- Screenshots: `test-results/screenshots/`.
+- HTML report: `playwright-report/`, if enabled by the reporter.
+
+Check the test configuration before you change artifact paths or handling.
+
+Keep test results separate from reviewed visual baselines. Do not approve or overwrite baselines only because screenshots changed.
+
+## Verification
+
+Run checks that match the change.
+
+- Code changes: run the relevant tests and static checks.
+- UI changes: run the extension E2E tests and inspect screenshots when possible.
+- Full verification: run `npm run verify`.
+
+For UI changes, use DOM inspection and style measurements as supporting evidence. They do not replace visual inspection.
+
+Do not claim a check passed unless it ran successfully.
+
+Report:
+
+- Checks that passed.
+- Checks that failed.
+- Checks that did not run.
+- Environment limits.
+- Unresolved issues.
+
+For visual fixes, record the defect, the change, and the result under equivalent conditions. A changed screenshot does not prove an improvement.
+
+Do not add product features to work around an environment limit without justification.
+
+## Development Workflow
+
+- Commit messages follow Conventional Commits.
+- Commitlint checks commit messages.
+- Release Please manages version bumps and changelogs.
+- Do not create release tags manually.
+- Build the extension before loading `.output/chrome-mv3` in Chrome.
+- ESLint and Prettier enforce code style.
+- Both exclude `.wxt/**`, `node_modules/**`, and `.output/**`, according to the current configuration.
+
+## Important Files
+
+| File                             | Purpose                                  |
+| -------------------------------- | ---------------------------------------- |
+| `wxt.config.ts`                  | WXT and manifest configuration.          |
+| `package.json`                   | Scripts, dependencies, and version.      |
+| `vitest.config.ts`               | Unit-test configuration.                 |
+| `playwright.config.ts`           | E2E configuration and browser arguments. |
+| `e2e/fixtures.ts`                | Extension context and ID discovery.      |
+| `docs/test-background-worker.md` | Background worker test dependency.       |
+
+When documentation conflicts with source configuration, follow the verified source. Update the documentation after you confirm a change.
