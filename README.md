@@ -7,6 +7,7 @@ Chrome Manifest V3 extension built with WXT that converts the current webpage to
 md-capture provides a popup UI that automatically converts the active tab URL to Markdown when opened. The user can view the Markdown output and copy it explicitly via a Copy button.
 
 User workflow:
+
 1. Open the extension popup
 2. Popup queries the active tab URL via `chrome.tabs.query`
 3. GET `https://markdown.new/<url>` with `Accept: text/markdown`
@@ -16,6 +17,7 @@ User workflow:
 ## Features and Limitations
 
 Implemented:
+
 - Popup with toolbar, status indicator, Markdown output, Convert / Retry / Copy controls
 - Automatic conversion on popup open
 - Loading, success, error states with retry
@@ -23,6 +25,7 @@ Implemented:
 - Permissions: `activeTab` and host `https://markdown.new/*`
 
 Limitations:
+
 - Conversion depends on external `markdown.new` service
 - Clipboard write is mocked in tests; real clipboard requires user gesture
 - No background functionality beyond no-op service worker for test discovery
@@ -70,6 +73,7 @@ npm run build
 Output: `.output/chrome-mv3`
 
 Load in Chrome:
+
 1. Open `chrome://extensions`
 2. Enable Developer mode
 3. Load unpacked extension from `.output/chrome-mv3`
@@ -95,6 +99,7 @@ npm run test:e2e
 Playwright loads the built extension with `--load-extension=.output/chrome-mv3` and resolves extension ID via service worker.
 
 Tests in `e2e/`:
+
 - `e2e/popup.spec.ts` – popup renders and screenshot captured
 - `e2e/conversion.spec.ts` – deterministic conversion workflow
   - Successful conversion renders markdown

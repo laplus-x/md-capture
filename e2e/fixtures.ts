@@ -7,23 +7,20 @@ const __dirname = path.dirname(__filename);
 
 const extensionPath = path.resolve(__dirname, '../.output/chrome-mv3');
 
-export const test = base.extend<{ 
+export const test = base.extend<{
   context: BrowserContext;
   extensionId: string;
 }>({
-  context: async ({ }, use) => {
+  context: async ({}, use) => {
     const context = await chromium.launchPersistentContext('', {
       channel: 'chromium',
-      args: [
-        `--disable-extensions-except=${extensionPath}`,
-        `--load-extension=${extensionPath}`,
-      ],
+      args: [`--disable-extensions-except=${extensionPath}`, `--load-extension=${extensionPath}`],
     });
     await use(context);
     await context.close();
   },
   extensionId: async ({ context }, use) => {
-    await new Promise(r => setTimeout(r, 1000));
+    await new Promise((r) => setTimeout(r, 1000));
     const serviceWorkers = context.serviceWorkers();
     if (serviceWorkers.length > 0) {
       const extensionId = serviceWorkers[0].url().split('/')[2];

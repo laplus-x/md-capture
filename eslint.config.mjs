@@ -6,22 +6,11 @@ import prettierConfig from 'eslint-config-prettier';
 
 export default [
   {
-    ignores: [
-      '.wxt/**',
-      'node_modules/**',
-      '.output/**',
-      'scripts/**',
-      '.opencode/**',
-    ],
+    ignores: ['.wxt/**', 'node_modules/**', '.output/**', 'scripts/**', '.opencode/**'],
   },
   js.configs.recommended,
   {
-    files: [
-      'entrypoints/**/*.ts',
-      'wxt.config.ts',
-      'src/**/*.ts',
-      'tests/**/*.ts',
-    ],
+    files: ['entrypoints/**/*.ts', 'wxt.config.ts', 'src/**/*.ts', 'tests/**/*.ts'],
     languageOptions: {
       parser: tsParser,
       parserOptions: {

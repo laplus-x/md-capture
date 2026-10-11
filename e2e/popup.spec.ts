@@ -10,7 +10,7 @@ test('popup renders and screenshot is captured', async ({ context, extensionId }
   const popupUrl = `chrome-extension://${extensionId}/popup.html`;
   const page = await context.newPage();
   await page.goto(popupUrl);
-  
+
   await expect(page.locator('.toolbar')).toBeVisible();
   await expect(page.locator('#convert-btn')).toBeVisible();
   await expect(page.locator('#status')).toBeVisible();

@@ -1,3 +1,4 @@
+import type { Page } from '@playwright/test';
 import { test, expect } from './fixtures';
 import path from 'path';
 import fs from 'fs';
@@ -8,7 +9,7 @@ const __dirname = path.dirname(__filename);
 
 const screenshotsDir = path.resolve(__dirname, '../test-results/screenshots');
 
-async function mockTabs(popup, url = 'https://example.com') {
+async function mockTabs(popup: Page, url = 'https://example.com') {
   await popup.addInitScript(() => {
     // Override chrome.tabs.query for deterministic testing
     const mockTabs = [{ id: 1, url: 'https://example.com', active: true, currentWindow: true }];
@@ -21,7 +22,9 @@ async function mockTabs(popup, url = 'https://example.com') {
     // Mock clipboard for deterministic tests
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
       Object.defineProperty(navigator.clipboard, 'writeText', {
-        value: async (text) => { /* no-op */ },
+        value: async (text: string) => {
+          /* no-op */
+        },
         configurable: true,
       });
     }
@@ -32,7 +35,7 @@ test.describe('Markdown conversion workflow', () => {
   test('successful conversion renders markdown', async ({ context, extensionId }) => {
     // Setup deterministic response
     let requestUrl = '';
-    await context.route('**/markdown.new/**', async route => {
+    await context.route('**/markdown.new/**', async (route) => {
       requestUrl = route.request().url();
       await route.fulfill({
         status: 200,
@@ -67,7 +70,7 @@ test.describe('Markdown conversion workflow', () => {
   });
 
   test('error state shows on failed conversion', async ({ context, extensionId }) => {
-    await context.route('**/markdown.new/**', async route => {
+    await context.route('**/markdown.new/**', async (route) => {
       await route.fulfill({
         status: 500,
         contentType: 'text/plain',
@@ -94,7 +97,7 @@ test.describe('Markdown conversion workflow', () => {
 
   test('retry recovers after error', async ({ context, extensionId }) => {
     let callCount = 0;
-    await context.route('**/markdown.new/**', async route => {
+    await context.route('**/markdown.new/**', async (route) => {
       callCount++;
       if (callCount === 1) {
         await route.fulfill({ status: 500, body: 'Error' });
@@ -127,7 +130,7 @@ test.describe('Markdown conversion workflow', () => {
   });
 
   test('copy requires explicit action and shows feedback', async ({ context, extensionId }) => {
-    await context.route('**/markdown.new/**', async route => {
+    await context.route('**/markdown.new/**', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'text/markdown',
