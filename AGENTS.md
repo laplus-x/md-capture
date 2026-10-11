@@ -134,8 +134,9 @@ Do not add product features to work around an environment limit without justific
 - Release Please manages version bumps and changelogs.
 - Do not create release tags manually.
 - Build the extension before loading `.output/chrome-mv3` in Chrome.
-- ESLint and Prettier enforce code style.
+- Oxlint and Oxfmt enforce code style.
 - Both exclude `.wxt/**`, `node_modules/**`, and `.output/**`, according to the current configuration.
+- Husky runs Git hooks on commit, push, checkout, and merge. See `docs/git-hooks.md`.
 
 ## Important Files
 
@@ -147,5 +148,6 @@ Do not add product features to work around an environment limit without justific
 | `playwright.config.ts`           | E2E configuration and browser arguments. |
 | `e2e/fixtures.ts`                | Extension context and ID discovery.      |
 | `docs/test-background-worker.md` | Background worker test dependency.       |
+| `docs/git-hooks.md`              | Git hook checks and failure behavior.    |
 
 When documentation conflicts with source configuration, follow the verified source. Update the documentation after you confirm a change.

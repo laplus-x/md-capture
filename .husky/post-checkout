@@ -1,0 +1,16 @@
+# Only branch checkouts ($3 = 1). File checkouts do nothing.
+[ "$3" -eq 1 ] || exit 0
+
+# Nothing to compare after initial checkout/clone ($1 = null SHA).
+case "$1" in
+*[!0]*) ;;
+*) exit 0 ;;
+esac
+
+if ! git diff --quiet "$1" "$2" -- package.json package-lock.json bun.lock yarn.lock pnpm-lock.yaml; then
+  echo "Dependency manifests or lockfiles changed. Run 'npm install' to update dependencies."
+fi
+
+if ! git diff --quiet "$1" "$2" -- wxt.config.ts; then
+  echo "WXT configuration changed. Run 'npx wxt prepare' to regenerate .wxt."
+fi

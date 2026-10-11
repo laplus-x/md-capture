@@ -55,6 +55,10 @@ npm run dev
 
 Dev server runs on port 3000. Load unpacked extension from `.output/chrome-mv3` after build.
 
+### Git hooks
+
+Husky runs quality hooks on commit, push, checkout, and merge. `pre-commit` formats and lints staged files, `pre-push` runs lint, format check, typecheck, and unit tests, and the post-operation hooks remind you when dependencies may need updates. See `docs/git-hooks.md` for details and failure behavior.
+
 ## Build and Production Usage
 
 Build production extension:

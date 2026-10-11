@@ -1,0 +1,6 @@
+# Only notify when a merge changes dependency manifests or lockfiles.
+if git rev-parse -q --verify ORIG_HEAD >/dev/null 2>&1; then
+  if ! git diff --quiet ORIG_HEAD HEAD -- package.json package-lock.json bun.lock yarn.lock pnpm-lock.yaml; then
+    echo "Dependency manifests or lockfiles changed by the merge. Run 'npm install' to update dependencies."
+  fi
+fi
