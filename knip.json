@@ -1,0 +1,14 @@
+{
+  "$schema": "https://unpkg.com/knip@^5.0.0/schema.json",
+  "entry": ["entrypoints/**/*.ts", "wxt.config.ts", "playwright.config.ts", "e2e/**/*.ts"],
+  "project": ["entrypoints/**/*.ts", "wxt.config.ts", "playwright.config.ts", "e2e/**/*.ts"],
+  "ignore": [
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    ".agents/**",
+    ".claude/**",
+    ".opencode/**",
+    "eslint.config.mjs"
+  ],
+  "ignoreDependencies": ["@types/chrome", "lint-staged"]
+}
