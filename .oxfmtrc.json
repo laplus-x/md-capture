@@ -1,0 +1,15 @@
+{
+  "singleQuote": true,
+  "semi": true,
+  "tabWidth": 2,
+  "ignorePatterns": [
+    ".output/**",
+    ".wxt/**",
+    "node_modules/**",
+    "src/**",
+    "tests/**",
+    "*.lock",
+    ".opencode/**",
+    "design-system/**"
+  ]
+}

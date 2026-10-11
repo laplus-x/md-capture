@@ -1,0 +1,19 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript"],
+  "globals": {
+    "document": "readonly",
+    "window": "readonly",
+    "navigator": "readonly",
+    "chrome": "readonly",
+    "fetch": "readonly",
+    "setTimeout": "readonly",
+    "clearTimeout": "readonly",
+    "console": "readonly"
+  },
+  "ignorePatterns": [".wxt/**", "node_modules/**", ".output/**", "scripts/**", ".opencode/**"],
+  "rules": {
+    "typescript/no-explicit-any": "warn",
+    "eslint/no-unused-vars": "warn"
+  }
+}
