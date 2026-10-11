@@ -35,9 +35,10 @@ pnpm-debug.log*
 .env.local
 .env.*.local
 
-# Prettier
-.prettierignore
+# Oxlint / Oxfmt
 
 # OS
 Thumbs.db
 *.zip
+
+**/skills
